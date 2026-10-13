@@ -1,0 +1,911 @@
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  ArrowRight,
+  Bell,
+  BriefcaseBusiness,
+  Building2,
+  ChevronDown,
+  CircleAlert,
+  Download,
+  Eye,
+  FileText,
+  Home,
+  LockKeyhole,
+  LogOut,
+  Mail,
+  Menu,
+  Moon,
+  Pencil,
+  ReceiptIndianRupee,
+  Search,
+  Settings2,
+  ShieldCheck,
+  Sparkles,
+  Sun,
+  UserRound,
+  WalletCards,
+  X,
+} from "lucide-react";
+
+type Screen = "login" | "dashboard" | "profile" | "payslip";
+type DisplayState = "normal" | "loading" | "empty" | "error";
+
+const nav = [
+  { id: "dashboard" as Screen, label: "Overview", icon: Home },
+  { id: "profile" as Screen, label: "My profile", icon: UserRound },
+  { id: "payslip" as Screen, label: "Payslips", icon: ReceiptIndianRupee },
+];
+
+export function GrowmerPortal() {
+  const [screen, setScreen] = useState<Screen>("dashboard");
+  const [option, setOption] = useState<1 | 2>(1);
+  const [state, setState] = useState<DisplayState>("normal");
+  const [dark, setDark] = useState(false);
+  const [mobileNav, setMobileNav] = useState(false);
+
+  const selectScreen = (next: Screen) => {
+    setScreen(next);
+    setOption(1);
+    setState("normal");
+    setMobileNav(false);
+  };
+
+  return (
+    <div
+      className={cn(
+        "min-h-screen bg-background text-foreground transition-colors",
+        dark && "dark",
+      )}
+    >
+      <div className="flex min-h-screen">
+        {screen !== "login" && (
+          <Sidebar
+            screen={screen}
+            selectScreen={selectScreen}
+            mobileNav={mobileNav}
+            setMobileNav={setMobileNav}
+          />
+        )}
+        <main
+          className={cn(
+            "min-w-0 flex-1",
+            screen === "login" ? "flex flex-col" : "lg:pl-0",
+          )}
+        >
+          {screen !== "login" && (
+            <Topbar dark={dark} setDark={setDark} setMobileNav={setMobileNav} />
+          )}
+          {screen === "login" ? (
+            <Login
+              option={option}
+              setOption={setOption}
+              state={state}
+              setState={setState}
+              dark={dark}
+              setDark={setDark}
+            />
+          ) : (
+            <div className="mx-auto w-full max-w-[1440px] p-4 sm:p-6 lg:p-10">
+              <PreviewBar
+                option={option}
+                setOption={setOption}
+                state={state}
+                setState={setState}
+              />
+              {state === "loading" ? (
+                <LoadingState />
+              ) : state === "empty" ? (
+                <EmptyState screen={screen} />
+              ) : state === "error" ? (
+                <ErrorState setState={setState} />
+              ) : screen === "dashboard" ? (
+                <Dashboard option={option} selectScreen={selectScreen} />
+              ) : screen === "profile" ? (
+                <Profile option={option} />
+              ) : (
+                <Payslip option={option} />
+              )}
+            </div>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function Brand({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className="grid size-9 place-items-center rounded-xl bg-emerald-600 text-white shadow-sm">
+        <Sparkles className="size-4" />
+      </div>
+      {!compact && (
+        <div>
+          <p className="text-[15px] font-semibold tracking-tight">growmer</p>
+          <p className="text-[10px] font-medium uppercase tracking-[.2em] text-muted-foreground">
+            people portal
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Sidebar({
+  screen,
+  selectScreen,
+  mobileNav,
+  setMobileNav,
+}: {
+  screen: Screen;
+  selectScreen: (s: Screen) => void;
+  mobileNav: boolean;
+  setMobileNav: (v: boolean) => void;
+}) {
+  return (
+    <>
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-30 flex w-[248px] flex-col border-r bg-card px-4 py-6 transition-transform lg:static lg:translate-x-0",
+          mobileNav ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        <div className="flex items-center justify-between px-2">
+          <Brand />
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="lg:hidden"
+            onClick={() => setMobileNav(false)}
+            aria-label="Close navigation"
+          >
+            <X />
+          </Button>
+        </div>
+        <div className="mt-12 flex flex-1 flex-col gap-1">
+          {nav.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => selectScreen(id)}
+              className={cn(
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                screen === id
+                  ? "bg-emerald-600/10 text-emerald-700 dark:text-emerald-400"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              <Icon className="size-[18px]" />
+              {label}
+            </button>
+          ))}
+          <div className="my-5 border-t" />
+          <button className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+            <Settings2 className="size-[18px]" />
+            Settings
+          </button>
+        </div>
+        <div className="rounded-2xl bg-emerald-600/[.07] p-4">
+          <div className="mb-3 flex size-8 items-center justify-center rounded-lg bg-emerald-600 text-xs font-semibold text-white">
+            AM
+          </div>
+          <p className="text-sm font-semibold">Aarav Mehta</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            GR-1042 · Product Design
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-3 -ml-2 text-muted-foreground"
+            onClick={() => selectScreen("login")}
+          >
+            <LogOut data-icon="inline-start" />
+            Sign out
+          </Button>
+        </div>
+      </aside>
+      {mobileNav && (
+        <button
+          className="fixed inset-0 z-20 bg-black/20 lg:hidden"
+          onClick={() => setMobileNav(false)}
+          aria-label="Close navigation overlay"
+        />
+      )}
+    </>
+  );
+}
+
+function Topbar({
+  dark,
+  setDark,
+  setMobileNav,
+}: {
+  dark: boolean;
+  setDark: (v: boolean) => void;
+  setMobileNav: (v: boolean) => void;
+}) {
+  return (
+    <header className="flex h-16 items-center justify-between border-b bg-card/80 px-4 backdrop-blur sm:px-6 lg:px-10">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="lg:hidden"
+        onClick={() => setMobileNav(true)}
+        aria-label="Open navigation"
+      >
+        <Menu />
+      </Button>
+      <div className="hidden text-sm text-muted-foreground sm:block">
+        Tuesday, October 13, 2026
+      </div>
+      <div className="ml-auto flex items-center gap-2">
+        <Button variant="ghost" size="icon" aria-label="Search">
+          <Search />
+        </Button>
+        <Button variant="ghost" size="icon" aria-label="Notifications">
+          <Bell />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setDark(!dark)}
+          aria-label="Toggle theme"
+        >
+          {dark ? <Sun /> : <Moon />}
+        </Button>
+        <div className="ml-1 hidden h-8 w-px bg-border sm:block" />
+        <div className="hidden items-center gap-2 pl-2 sm:flex">
+          <div className="grid size-8 place-items-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+            AM
+          </div>
+          <ChevronDown className="size-4 text-muted-foreground" />
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function PreviewBar({
+  option,
+  setOption,
+  state,
+  setState,
+}: {
+  option: 1 | 2;
+  setOption: (v: 1 | 2) => void;
+  state: DisplayState;
+  setState: (v: DisplayState) => void;
+}) {
+  return (
+    <div className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-3 py-2.5 text-xs">
+      <div className="flex items-center gap-2">
+        <span className="font-semibold text-foreground">Preview</span>
+        <span className="text-muted-foreground">
+          Explore two directions and UI states
+        </span>
+      </div>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex rounded-lg bg-muted p-0.5">
+          {([1, 2] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setOption(v)}
+              className={cn(
+                "rounded-md px-3 py-1.5 font-medium",
+                option === v
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground",
+              )}
+            >
+              Option {v}
+            </button>
+          ))}
+        </div>
+        <select
+          value={state}
+          onChange={(e) => setState(e.target.value as DisplayState)}
+          className="h-8 rounded-lg border bg-background px-2.5 font-medium text-foreground outline-none"
+        >
+          <option value="normal">Normal state</option>
+          <option value="loading">Loading state</option>
+          <option value="empty">Empty state</option>
+          <option value="error">Error state</option>
+        </select>
+      </div>
+    </div>
+  );
+}
+
+function PageHeading({
+  eyebrow,
+  title,
+  copy,
+  option,
+}: {
+  eyebrow: string;
+  title: string;
+  copy: string;
+  option: 1 | 2;
+}) {
+  return (
+    <div
+      className={cn(
+        "mb-8",
+        option === 2 && "border-l-2 border-emerald-500 pl-5",
+      )}
+    >
+      <p className="mb-2 text-xs font-semibold uppercase tracking-[.18em] text-emerald-600">
+        {eyebrow}
+      </p>
+      <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+        {title}
+      </h1>
+      <p className="mt-2 max-w-xl text-sm text-muted-foreground">{copy}</p>
+    </div>
+  );
+}
+
+function Dashboard({
+  option,
+  selectScreen,
+}: {
+  option: 1 | 2;
+  selectScreen: (s: Screen) => void;
+}) {
+  return (
+    <>
+      <PageHeading
+        option={option}
+        eyebrow="Tuesday, October 13"
+        title="Good morning, Aarav"
+        copy="Here’s a clear view of your work essentials and what needs your attention."
+      />
+      <div className="grid gap-4 md:grid-cols-3">
+        <Metric
+          icon={WalletCards}
+          label="Net pay · September"
+          value="₹65,000"
+          note="Deposited Sep 30, 2026"
+        />
+        <Metric
+          icon={BriefcaseBusiness}
+          label="Leave balance"
+          value="18 days"
+          note="Available this year"
+        />
+        <Metric
+          icon={FileText}
+          label="Open requests"
+          value="02"
+          note="1 needs your review"
+        />
+      </div>
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_.8fr]">
+        <section className="rounded-2xl border bg-card p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="font-semibold">September payslip</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Your latest payroll statement is ready.
+              </p>
+            </div>
+            <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+              Paid
+            </span>
+          </div>
+          <div className="mt-7 grid grid-cols-3 gap-3 border-y py-5">
+            <PayStat label="Gross earnings" value="₹75,000" />
+            <PayStat label="Deductions" value="₹10,000" />
+            <PayStat label="Net pay" value="₹65,000" strong />
+          </div>
+          <Button
+            className="mt-5 bg-emerald-600 hover:bg-emerald-700"
+            onClick={() => selectScreen("payslip")}
+          >
+            View payslip <ArrowRight data-icon="inline-end" />
+          </Button>
+        </section>
+        <section className="rounded-2xl border bg-card p-5 sm:p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold">Quick actions</h2>
+            <span className="text-xs text-muted-foreground">2 available</span>
+          </div>
+          <div className="mt-4 flex flex-col gap-2">
+            {(
+              [
+                ["Profile", UserRound, "Update your details"],
+                ["Payslips", ReceiptIndianRupee, "Download a statement"],
+              ] as const
+            ).map(([label, Icon, copy]) => (
+              <button
+                key={label as string}
+                onClick={() =>
+                  selectScreen(
+                    (label as string) === "Profile" ? "profile" : "payslip",
+                  )
+                }
+                className="flex items-center gap-3 rounded-xl border p-3 text-left transition-colors hover:bg-muted"
+              >
+                <div className="grid size-9 place-items-center rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                  <Icon className="size-4" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{label as string}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {copy as string}
+                  </p>
+                </div>
+                <ArrowRight className="size-4 text-muted-foreground" />
+              </button>
+            ))}
+          </div>
+        </section>
+      </div>
+      <div className="mt-6 rounded-2xl border bg-emerald-700 p-5 text-white sm:p-6">
+        <div className="flex items-center gap-4">
+          <div className="grid size-11 place-items-center rounded-xl bg-white/15">
+            <ShieldCheck className="size-5" />
+          </div>
+          <div>
+            <p className="font-semibold">Your information stays protected</p>
+            <p className="mt-1 text-sm text-emerald-100">
+              Growmer uses secure, role-based access for employee data.
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function Metric({
+  icon: Icon,
+  label,
+  value,
+  note,
+}: {
+  icon: typeof WalletCards;
+  label: string;
+  value: string;
+  note: string;
+}) {
+  return (
+    <div className="rounded-2xl border bg-card p-5">
+      <div className="flex items-center justify-between">
+        <Icon className="size-5 text-emerald-600" />
+        <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          2026
+        </span>
+      </div>
+      <p className="mt-6 text-sm text-muted-foreground">{label}</p>
+      <p className="mt-1 text-2xl font-semibold tracking-tight">{value}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{note}</p>
+    </div>
+  );
+}
+function PayStat({
+  label,
+  value,
+  strong,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+}) {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p
+        className={cn(
+          "mt-1 text-sm font-medium",
+          strong &&
+            "text-lg font-semibold text-emerald-700 dark:text-emerald-400",
+        )}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function Profile({ option }: { option: 1 | 2 }) {
+  return (
+    <>
+      <PageHeading
+        option={option}
+        eyebrow="Personal details"
+        title="My profile"
+        copy="Keep your information current so your team can reach you when it matters."
+      />
+      <div className="grid gap-6 lg:grid-cols-[.65fr_1.35fr]">
+        <section className="rounded-2xl border bg-card p-6">
+          <div className="flex flex-col items-center text-center">
+            <div className="grid size-20 place-items-center rounded-3xl bg-emerald-100 text-2xl font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+              AM
+            </div>
+            <h2 className="mt-4 text-lg font-semibold">Aarav Mehta</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Product Designer
+            </p>
+            <span className="mt-3 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+              Active employee
+            </span>
+          </div>
+          <div className="mt-7 flex flex-col gap-3 border-t pt-5 text-sm">
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <BriefcaseBusiness className="size-4 text-emerald-600" />
+              Product & Design
+            </div>
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <Building2 className="size-4 text-emerald-600" />
+              Bengaluru, India
+            </div>
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <ShieldCheck className="size-4 text-emerald-600" />
+              Employee ID: GR-1042
+            </div>
+          </div>
+        </section>
+        <section className="rounded-2xl border bg-card p-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="font-semibold">Contact information</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Visible only to authorized HR staff.
+              </p>
+            </div>
+            <Button variant="outline" size="sm">
+              <Pencil data-icon="inline-start" />
+              Edit
+            </Button>
+          </div>
+          <div className="mt-7 grid gap-x-8 gap-y-6 sm:grid-cols-2">
+            {(
+              [
+                ["Work email", "aarav.mehta@growmer.co", Mail],
+                ["Phone", "+91 98••• ••421", BriefcaseBusiness],
+                ["Personal email", "aarav.m••••@mail.com", Mail],
+                ["Location", "Bengaluru, Karnataka", Building2],
+              ] as const
+            ).map(([label, value, Icon]) => (
+              <div key={label as string}>
+                <p className="text-xs text-muted-foreground">
+                  {label as string}
+                </p>
+                <div className="mt-2 flex items-center gap-2 text-sm font-medium">
+                  <Icon className="size-4 text-emerald-600" />
+                  {value as string}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 border-t pt-5">
+            <h3 className="text-sm font-semibold">Banking details</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Used only for payroll deposits.
+            </p>
+            <div className="mt-4 flex items-center justify-between rounded-xl bg-muted p-4">
+              <div>
+                <p className="text-xs text-muted-foreground">HDFC Bank</p>
+                <p className="mt-1 text-sm font-medium">•••• •••• •••• 4821</p>
+              </div>
+              <LockKeyhole className="size-4 text-muted-foreground" />
+            </div>
+          </div>
+        </section>
+      </div>
+    </>
+  );
+}
+
+function Payslip({ option }: { option: 1 | 2 }) {
+  return (
+    <>
+      <PageHeading
+        option={option}
+        eyebrow="Payroll"
+        title="Your payslips"
+        copy="Review and download your monthly salary statements securely."
+      />
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2 text-sm">
+          <span className="text-muted-foreground">Period</span>
+          <select className="bg-transparent font-medium outline-none">
+            <option>September 2026</option>
+            <option>August 2026</option>
+          </select>
+        </div>
+        <Button variant="outline">
+          <Download data-icon="inline-start" />
+          Download PDF
+        </Button>
+      </div>
+      <section className="overflow-hidden rounded-2xl border bg-card">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b p-5 sm:p-6">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="font-semibold">September 2026</h2>
+              <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                PAID
+              </span>
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Paid on September 30, 2026 · Aarav Mehta · GR-1042
+            </p>
+          </div>
+          <div className="text-left sm:text-right">
+            <p className="text-xs text-muted-foreground">Net pay</p>
+            <p className="mt-1 text-2xl font-semibold text-emerald-700 dark:text-emerald-400">
+              ₹65,000
+            </p>
+          </div>
+        </div>
+        <div className="grid gap-0 md:grid-cols-2">
+          <div className="p-5 sm:p-6">
+            <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Earnings
+            </p>
+            <div className="flex flex-col gap-3">
+              {[
+                ["Basic salary", "₹45,000"],
+                ["House rent allowance", "₹18,000"],
+                ["Special allowance", "₹12,000"],
+              ].map(([l, v]) => (
+                <div className="flex justify-between text-sm" key={l}>
+                  <span className="text-muted-foreground">{l}</span>
+                  <span className="font-medium">{v}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 flex justify-between border-t pt-4 text-sm font-semibold">
+              <span>Gross earnings</span>
+              <span>₹75,000</span>
+            </div>
+          </div>
+          <div className="border-t p-5 sm:border-l sm:border-t-0 sm:p-6">
+            <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Deductions
+            </p>
+            <div className="flex flex-col gap-3">
+              {[
+                ["Provident fund", "₹5,400"],
+                ["Professional tax", "₹200"],
+                ["Income tax", "₹4,400"],
+              ].map(([l, v]) => (
+                <div className="flex justify-between text-sm" key={l}>
+                  <span className="text-muted-foreground">{l}</span>
+                  <span className="font-medium">{v}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 flex justify-between border-t pt-4 text-sm font-semibold">
+              <span>Total deductions</span>
+              <span>₹10,000</span>
+            </div>
+          </div>
+        </div>
+        <div className="border-t bg-emerald-600/[.06] p-5 sm:p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold">Amount credited</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                HDFC Bank · Account ending 4821
+              </p>
+            </div>
+            <p className="text-xl font-semibold text-emerald-700 dark:text-emerald-400">
+              ₹65,000
+            </p>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div key={i} className="h-32 animate-pulse rounded-2xl bg-muted" />
+      ))}
+    </div>
+  );
+}
+function EmptyState({ screen }: { screen: Screen }) {
+  return (
+    <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-dashed bg-card p-8 text-center">
+      <div className="grid size-14 place-items-center rounded-2xl bg-muted text-muted-foreground">
+        <FileText />
+      </div>
+      <h2 className="mt-5 text-lg font-semibold">Nothing here yet</h2>
+      <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+        There are no {screen === "payslip" ? "payslips" : "updates"} to show
+        right now. Check back later.
+      </p>
+    </div>
+  );
+}
+function ErrorState({ setState }: { setState: (v: DisplayState) => void }) {
+  return (
+    <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-destructive/30 bg-card p-8 text-center">
+      <div className="grid size-14 place-items-center rounded-2xl bg-destructive/10 text-destructive">
+        <CircleAlert />
+      </div>
+      <h2 className="mt-5 text-lg font-semibold">We couldn’t load this</h2>
+      <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+        Something went wrong while fetching your portal data.
+      </p>
+      <Button
+        variant="outline"
+        className="mt-5"
+        onClick={() => setState("normal")}
+      >
+        Try again
+      </Button>
+    </div>
+  );
+}
+
+function Login({
+  option,
+  setOption,
+  state,
+  setState,
+  dark,
+  setDark,
+}: {
+  option: 1 | 2;
+  setOption: (v: 1 | 2) => void;
+  state: DisplayState;
+  setState: (v: DisplayState) => void;
+  dark: boolean;
+  setDark: (v: boolean) => void;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex min-h-screen flex-col",
+        option === 2 && "bg-muted/30",
+      )}
+    >
+      <header className="flex items-center justify-between border-b px-5 py-4 sm:px-8">
+        <Brand />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setOption(option === 1 ? 2 : 1)}
+            className="hidden rounded-lg border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted sm:block"
+          >
+            Option {option === 1 ? "2" : "1"}
+          </button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setDark(!dark)}
+            aria-label="Toggle theme"
+          >
+            {dark ? <Sun /> : <Moon />}
+          </Button>
+        </div>
+      </header>
+      <div className="flex flex-1 items-center justify-center p-5 sm:p-8">
+        <div
+          className={cn(
+            "grid w-full max-w-[980px] overflow-hidden border bg-card shadow-sm lg:grid-cols-2",
+            option === 1 ? "rounded-3xl" : "rounded-xl",
+          )}
+        >
+          <div
+            className={cn(
+              "hidden flex-col justify-between bg-emerald-700 p-10 text-white lg:flex",
+              option === 2 && "bg-foreground",
+            )}
+          >
+            <div>
+              <p className="text-sm font-semibold">
+                Employee self-service, made clear.
+              </p>
+              <h1 className="mt-5 max-w-sm text-4xl font-semibold leading-[1.08] tracking-tight">
+                Everything you need to grow at work.
+              </h1>
+              <p className="mt-5 max-w-sm text-sm leading-6 text-emerald-100">
+                Your work essentials, salary details, and personal profile — all
+                in one calm place.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-emerald-100">
+              <ShieldCheck className="size-4" />
+              Secure employee access
+            </div>
+          </div>
+          <div className="p-6 sm:p-10">
+            <div className="mx-auto max-w-sm">
+              <p className="text-xs font-semibold uppercase tracking-[.18em] text-emerald-600">
+                Welcome back
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+                Sign in to Growmer
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Use your work email to continue.
+              </p>
+              {state === "loading" ? (
+                <div className="mt-8 flex flex-col gap-4">
+                  <div className="h-10 animate-pulse rounded-lg bg-muted" />
+                  <div className="h-10 animate-pulse rounded-lg bg-muted" />
+                  <div className="h-10 animate-pulse rounded-lg bg-muted" />
+                </div>
+              ) : state === "error" ? (
+                <div className="mt-8 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
+                  <div className="flex gap-2 font-medium text-destructive">
+                    <CircleAlert className="size-4" />
+                    Unable to sign in
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Check your details and try again.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3"
+                    onClick={() => setState("normal")}
+                  >
+                    Try again
+                  </Button>
+                </div>
+              ) : (
+                <div className="mt-8 flex flex-col gap-4">
+                  <label className="flex flex-col gap-2 text-sm font-medium">
+                    Work email
+                    <input
+                      className="h-10 rounded-lg border bg-background px-3 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-emerald-500/30"
+                      defaultValue="aarav.mehta@growmer.co"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-2 text-sm font-medium">
+                    Password
+                    <div className="relative">
+                      <input
+                        type="password"
+                        className="h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500/30"
+                        defaultValue="password"
+                      />
+                      <Eye className="absolute right-3 top-3 size-4 text-muted-foreground" />
+                    </div>
+                  </label>
+                  <div className="flex items-center justify-between text-xs">
+                    <label className="flex items-center gap-2 text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        className="accent-emerald-600"
+                        defaultChecked
+                      />
+                      Remember me
+                    </label>
+                    <button className="font-medium text-emerald-700 dark:text-emerald-400">
+                      Forgot password?
+                    </button>
+                  </div>
+                  <Button
+                    className="mt-2 h-10 bg-emerald-600 hover:bg-emerald-700"
+                    onClick={() => setState("loading")}
+                  >
+                    Sign in <ArrowRight data-icon="inline-end" />
+                  </Button>
+                  <p className="text-center text-xs text-muted-foreground">
+                    Prototype only · Authentication is not connected
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="pb-6 text-center text-xs text-muted-foreground">
+        © 2026 Growmer · Privacy · Help
+      </div>
+    </div>
+  );
+}

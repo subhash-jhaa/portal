@@ -1,4 +1,4 @@
-import { ProjectsView } from "@/components/features/projects/projects-view";
-export default function OverviewPage() {
-  return <ProjectsView overview />;
+import { redirect } from "next/navigation";
+export default function HomePage() {
+  redirect("/dashboard");
 }

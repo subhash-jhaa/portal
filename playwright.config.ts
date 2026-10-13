@@ -1,10 +1,14 @@
 import { defineConfig } from "@playwright/test";
+const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
 export default defineConfig({
   testDir: "./tests/e2e",
-  use: { baseURL: "http://localhost:3000", trace: "retain-on-failure" },
+  workers: 2,
+  use: { baseURL, trace: "retain-on-failure" },
   webServer: {
     command: "npm run start",
-    url: "http://localhost:3000/health",
+    url: baseURL + "/health",
     reuseExistingServer: !process.env.CI,
+    // Keep the server and test address aligned even when .env has Docker's PORT.
+    env: { PORT: new URL(baseURL).port || "3000" },
   },
 });

@@ -1,0 +1,541 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Growmer employee API — provisional integration contract",
+    "version": "0.3.0",
+    "description": "Provisional authenticated employee API pending Python team contract. Directory exposes public employment and work contact fields only."
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/employee/profile": {
+      "get": {
+        "operationId": "getEmployeeProfile",
+        "parameters": [
+          {
+            "name": "demoState",
+            "in": "query",
+            "required": false,
+            "description": "MSW-only review scenario. Omit for the real backend.",
+            "schema": {
+              "type": "string",
+              "enum": ["normal", "loading", "empty", "error"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Employee"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateEmployeeContact",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Employee"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/employee/dashboard": {
+      "get": {
+        "operationId": "getEmployeeDashboard",
+        "parameters": [
+          {
+            "name": "demoState",
+            "in": "query",
+            "required": false,
+            "description": "MSW-only review scenario. Omit for the real backend.",
+            "schema": {
+              "type": "string",
+              "enum": ["normal", "loading", "empty", "error"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dashboard"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/employee/payslip": {
+      "get": {
+        "operationId": "getEmployeePayslip",
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "September 2026"
+          },
+          {
+            "name": "demoState",
+            "in": "query",
+            "required": false,
+            "description": "MSW-only review scenario. Omit for the real backend.",
+            "schema": {
+              "type": "string",
+              "enum": ["normal", "loading", "empty", "error"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayslipResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/employee/directory": {
+      "get": {
+        "operationId": "getEmployeeDirectory",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "department",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Directory"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session expired"
+          },
+          "503": {
+            "description": "Service unavailable"
+          }
+        }
+      }
+    },
+    "/employee/directory/{id}": {
+      "get": {
+        "operationId": "getColleague",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Colleague"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session expired"
+          },
+          "404": {
+            "description": "Employee not found"
+          },
+          "503": {
+            "description": "Service unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Employee": {
+        "type": "object",
+        "required": [
+          "name",
+          "initials",
+          "id",
+          "role",
+          "department",
+          "manager",
+          "location",
+          "email",
+          "phone",
+          "joined"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "initials": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "department": {
+            "type": "string"
+          },
+          "manager": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "joined": {
+            "type": "string"
+          },
+          "emergencyContact": {
+            "type": "string"
+          },
+          "accountEnd": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        }
+      },
+      "PayrollItem": {
+        "type": "object",
+        "required": ["label", "amount"],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      },
+      "Payslip": {
+        "type": "object",
+        "required": ["period", "paid", "account", "earnings", "deductions"],
+        "properties": {
+          "period": {
+            "type": "string"
+          },
+          "paid": {
+            "type": "string"
+          },
+          "account": {
+            "type": "string"
+          },
+          "earnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PayrollItem"
+            }
+          },
+          "deductions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PayrollItem"
+            }
+          }
+        }
+      },
+      "Dashboard": {
+        "type": "object",
+        "required": [
+          "employee",
+          "latestPayslip",
+          "profileActionCount",
+          "announcement"
+        ],
+        "properties": {
+          "employee": {
+            "$ref": "#/components/schemas/Employee"
+          },
+          "latestPayslip": {
+            "type": "object",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Payslip"
+              }
+            ]
+          },
+          "profileActionCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "announcement": {
+            "type": "string"
+          }
+        }
+      },
+      "PayslipResponse": {
+        "type": "object",
+        "required": ["employee", "payslip"],
+        "properties": {
+          "employee": {
+            "$ref": "#/components/schemas/Employee"
+          },
+          "payslip": {
+            "type": "object",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Payslip"
+              }
+            ]
+          }
+        }
+      },
+      "ContactInput": {
+        "type": "object",
+        "required": ["email", "phone"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 40,
+            "description": "Blank or 7–15 digits with optional leading +, spaces, parentheses and hyphens.",
+            "oneOf": [
+              {
+                "maxLength": 0
+              },
+              {
+                "minLength": 7
+              }
+            ]
+          },
+          "emergencyContact": {
+            "type": "string",
+            "maxLength": 120
+          }
+        },
+        "additionalProperties": false
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["code", "message"],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "Colleague": {
+        "type": "object",
+        "required": [
+          "name",
+          "initials",
+          "id",
+          "role",
+          "department",
+          "manager",
+          "location",
+          "email",
+          "phone",
+          "joined"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "initials": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "department": {
+            "type": "string"
+          },
+          "manager": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "joined": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        }
+      },
+      "Directory": {
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize",
+          "totalPages",
+          "departments"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Colleague"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "enum": [10]
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "departments": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

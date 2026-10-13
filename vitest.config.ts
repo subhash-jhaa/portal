@@ -5,6 +5,10 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts"],
-    env: { NEXT_PUBLIC_API_BASE_URL: "http://localhost:3000/api" },
+    env: {
+      NEXT_PUBLIC_API_BASE_URL: "http://localhost:3000/api",
+      AUTH_MOCKS_ENABLED: "true",
+      AUTH_JWT_SECRET: "test-only-key-32-bytes-minimum-not-a-production-secret",
+    },
   },
 });

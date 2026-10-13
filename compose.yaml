@@ -7,10 +7,21 @@ services:
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/api}
         NEXT_PUBLIC_ENABLE_MOCKS: ${NEXT_PUBLIC_ENABLE_MOCKS:-true}
     ports:
-      - "${PORT:-3000}:3000"
+      - "${PORT:-3006}:3000"
     environment:
       PORT: "3000"
       HOSTNAME: "0.0.0.0"
+      MOCK_AUTH_DATA_DIR: /app/.mock-data
+      AUTH_MOCKS_ENABLED: ${AUTH_MOCKS_ENABLED:-true}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:?Run npm run setup:env first}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+      APP_ORIGIN: ${APP_ORIGIN:-}
+      BACKEND_API_URL: ${BACKEND_API_URL:-}
+      AUTH_JWKS_URL: ${AUTH_JWKS_URL:-}
+      AUTH_JWT_ISSUER: ${AUTH_JWT_ISSUER:-}
+      AUTH_JWT_AUDIENCE: ${AUTH_JWT_AUDIENCE:-}
+    volumes:
+      - auth-data:/app/.mock-data
     init: true
     healthcheck:
       test:
@@ -24,3 +35,6 @@ services:
       timeout: 5s
       start_period: 20s
       retries: 3
+
+volumes:
+  auth-data:

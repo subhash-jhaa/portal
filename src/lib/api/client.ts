@@ -17,6 +17,7 @@ export async function apiRequest<T>(
       config.apiBaseUrl.replace(/\/$/, "") + "/" + path.replace(/^\//, ""),
       {
         ...init,
+        credentials: "same-origin",
         headers,
         body: body === undefined ? undefined : JSON.stringify(body),
       },
@@ -34,6 +35,12 @@ export async function apiRequest<T>(
       ? undefined
       : await response.json().catch(() => undefined);
   if (!response.ok) {
+    if (
+      response.status === 401 &&
+      !["/auth/login", "/auth/register"].includes(path) &&
+      typeof window !== "undefined"
+    )
+      window.dispatchEvent(new Event("growmer:session-expired"));
     const parsed = z
       .object({ error: z.object({ message: z.string(), code: z.string() }) })
       .safeParse(payload);

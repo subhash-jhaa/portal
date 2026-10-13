@@ -1,21 +1,14 @@
-import { beforeAll, afterAll, afterEach, describe, it, expect } from "vitest";
-import { setupServer } from "msw/node";
+import { describe, it, expect } from "vitest";
+import { setupMockBackend } from "./helpers/mock-backend";
 import { http, HttpResponse } from "msw";
 import { apiRequest } from "../src/lib/api/client";
 import { projectSchema } from "../src/lib/types/project";
-import { projectHandlers, resetProjects } from "../src/mocks/handlers/projects";
 import {
   getProjects,
   getProject,
   createProject,
 } from "../src/lib/api/projects";
-const server = setupServer(...projectHandlers);
-beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
-afterEach(() => {
-  server.resetHandlers();
-  resetProjects();
-});
-afterAll(() => server.close());
+const server = setupMockBackend();
 describe("typed API boundary", () => {
   it("receives contract validation errors for malformed create requests", async () => {
     await expect(

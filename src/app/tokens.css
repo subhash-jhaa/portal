@@ -1,0 +1,46 @@
+/* Generated from lib/design/palette.json. Run npm run sync:tokens after changes. */
+:root {
+  color-scheme: light;
+  --background: #f6f9f8;
+  --foreground: #172c25;
+  --card: #ffffff;
+  --card-foreground: #172c25;
+  --popover: #ffffff;
+  --popover-foreground: #172c25;
+  --primary: #047857;
+  --primary-foreground: #ffffff;
+  --secondary: #edf3f0;
+  --secondary-foreground: #172c25;
+  --muted: #edf3f0;
+  --muted-foreground: #52655c;
+  --accent: #e4f3eb;
+  --accent-foreground: #065f46;
+  --destructive: #b91c1c;
+  --border: #dbe6e0;
+  --input: #b6c8bd;
+  --ring: #047857;
+  --radius: 0.75rem;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0c1712;
+  --foreground: #edf7f0;
+  --card: #14251c;
+  --card-foreground: #edf7f0;
+  --popover: #14251c;
+  --popover-foreground: #edf7f0;
+  --primary: #6ee7b7;
+  --primary-foreground: #052e23;
+  --secondary: #21392d;
+  --secondary-foreground: #edf7f0;
+  --muted: #21392d;
+  --muted-foreground: #b5c9bb;
+  --accent: #1b3b2c;
+  --accent-foreground: #a7f3d0;
+  --destructive: #fca5a5;
+  --border: #345343;
+  --input: #5c7d6a;
+  --ring: #6ee7b7;
+  --radius: 0.75rem;
+}

@@ -1,0 +1,108 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Growmer documents API — provisional integration contract",
+    "version": "0.1.0",
+    "description": "Pending Python agreement. Fictional file metadata only, scoped to the verified bearer-token subject. No upload or download behavior."
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/employee/documents": {
+      "get": {
+        "operationId": "getEmployeeDocuments",
+        "responses": {
+          "200": {
+            "description": "Current user document metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Documents"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session expired"
+          },
+          "503": {
+            "description": "Document service unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Document": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "category",
+          "type",
+          "sizeBytes",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["Employment", "Policies", "Learning"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["PDF"]
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "Documents": {
+        "type": "object",
+        "required": ["ownerId", "items", "total"],
+        "properties": {
+          "ownerId": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}
