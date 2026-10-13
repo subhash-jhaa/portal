@@ -24,23 +24,23 @@
 
 .dark {
   color-scheme: dark;
-  --background: #0c1712;
-  --foreground: #edf7f0;
-  --card: #14251c;
-  --card-foreground: #edf7f0;
-  --popover: #14251c;
-  --popover-foreground: #edf7f0;
-  --primary: #6ee7b7;
-  --primary-foreground: #052e23;
-  --secondary: #21392d;
-  --secondary-foreground: #edf7f0;
-  --muted: #21392d;
-  --muted-foreground: #b5c9bb;
-  --accent: #1b3b2c;
-  --accent-foreground: #a7f3d0;
+  --background: #101114;
+  --foreground: #f1f3f5;
+  --card: #191b20;
+  --card-foreground: #f1f3f5;
+  --popover: #191b20;
+  --popover-foreground: #f1f3f5;
+  --primary: #34d399;
+  --primary-foreground: #062b21;
+  --secondary: #202228;
+  --secondary-foreground: #f1f3f5;
+  --muted: #202228;
+  --muted-foreground: #adb3be;
+  --accent: #252831;
+  --accent-foreground: #6ee7b7;
   --destructive: #fca5a5;
-  --border: #345343;
-  --input: #5c7d6a;
-  --ring: #6ee7b7;
+  --border: #33363f;
+  --input: #515762;
+  --ring: #34d399;
   --radius: 0.75rem;
 }

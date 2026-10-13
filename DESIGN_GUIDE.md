@@ -4,21 +4,21 @@ Task 2 · Reviewed v0 direction · 13 October 2026
 
 ## Purpose and selected layouts
 
-Employee self-service should make payroll and personal information easy to understand. Use the v0 emerald identity and calm card layout. Selected directions: split welcome for login, salary-first dashboard, identity sidebar for profile, and a readable payslip statement. The alternate layouts remain in /designs for comparison. The main routes render the selected screens with typed API/MSW data; /designs retains fixture-driven design comparisons. Task 3 provides live login and registration using the selected login frame.
+Employee self-service should make payroll and personal information easy to understand. Use the same emerald identity in both modes. Light mode uses pale neutral surfaces; dark mode uses neutral charcoal surfaces with emerald accents. Selected directions: split welcome for login, salary-first dashboard, identity sidebar for profile, and a readable payslip statement. The alternate layouts remain in /designs for comparison. The main routes render the selected screens with typed API/MSW data; /designs retains fixture-driven design comparisons. Task 3 provides live login and registration using the selected login frame.
 
 ## Colors and themes
 
-Use semantic classes; never scatter emerald/gray literals through screens. Canonical palette: src/lib/design/palette.json; generated CSS: src/app/tokens.css; typed export: src/lib/design/tokens.ts. Run npm run sync:tokens after palette changes, then npm run check:tokens. next-themes supplies persistent light/dark/system appearance.
+Use semantic classes; never scatter emerald/gray literals through screens. Canonical palette: src/lib/design/palette.json; generated CSS: src/app/tokens.css; typed export: src/lib/design/tokens.ts. Run npm run sync:tokens after palette changes, then npm run check:tokens. next-themes supplies persistent light/dark/system appearance. Dark surfaces, cards, borders and secondary areas are neutral charcoal; emerald is reserved for primary actions, links, focus and selected navigation text.
 
 | Role                   | Light             | Dark              |
 | ---------------------- | ----------------- | ----------------- |
-| Background / text      | #f6f9f8 / #172c25 | #0c1712 / #edf7f0 |
-| Card / text            | #ffffff / #172c25 | #14251c / #edf7f0 |
-| Primary / on-primary   | #047857 / #ffffff | #6ee7b7 / #052e23 |
-| Muted / secondary text | #edf3f0 / #52655c | #21392d / #b5c9bb |
-| Accent / text          | #e4f3eb / #065f46 | #1b3b2c / #a7f3d0 |
-| Border                 | #dbe6e0           | #345343           |
-| Input outline          | #b6c8bd           | #5c7d6a           |
+| Background / text      | #f6f9f8 / #172c25 | #101114 / #f1f3f5 |
+| Card / text            | #ffffff / #172c25 | #191b20 / #f1f3f5 |
+| Primary / on-primary   | #047857 / #ffffff | #34d399 / #062b21 |
+| Muted / secondary text | #edf3f0 / #52655c | #202228 / #adb3be |
+| Accent / text          | #e4f3eb / #065f46 | #252831 / #6ee7b7 |
+| Border                 | #dbe6e0           | #33363f           |
+| Input outline          | #b6c8bd           | #515762           |
 | Error text             | #b91c1c           | #fca5a5           |
 
 Core text/surface pairs are checked against 4.5:1 contrast. A red/green color must also have text or an icon explaining its meaning. Focus uses the primary ring with a visible outline. This is a design review, not a claim of a full accessibility audit.
