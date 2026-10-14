@@ -13,3 +13,7 @@ Document records are fictional metadata; no upload or download endpoint exists. 
 Acceptance: map approved schemas and errors, disable both mock flags, configure BACKEND_API_URL and HTTPS JWKS/issuer/audience, enable Secure cookies and APP_ORIGIN, rebuild public settings, then exercise registration/login/logout/expiry, own-profile PATCH, directory search/page and colleague privacy, and current-user document isolation against Python. Durable profile storage, rate limiting and role authorization belong to Python.
 
 Status: ready for contract review; external agreement and live backend verification pending.
+
+## Role-based workspace extension
+
+Admin sessions now receive an organization overview on /dashboard; employees retain their personal dashboard. Both keep self-service profile, documents, payslip and directory features. Admin overview is read-only and its new provisional GET /admin/overview contract requires backend admin authorization. Real Python integration still requires contract agreement.

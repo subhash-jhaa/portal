@@ -16,7 +16,23 @@ export function routeFailure(error: unknown) {
   );
 }
 export async function upstreamResponse(response: Response) {
-  const payload: unknown = await response.json().catch(() => null);
+  if ([204, 205, 304].includes(response.status))
+    return new NextResponse(null, {
+      status: response.status,
+      headers: { "Cache-Control": "no-store" },
+    });
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
+    if (response.ok)
+      return jsonError(
+        502,
+        "INVALID_RESPONSE",
+        "The service returned an unexpected response.",
+      );
+    payload = null;
+  }
   if (!response.ok) {
     const { z } = await import("zod");
     const parsed = z

@@ -21,12 +21,12 @@ import {
 } from "@/components/ui/table";
 import { Heading, Panel } from "./ui/primitives";
 export function DirectoryPage() {
-  const router = useRouter(),
-    search = useSearchParams(),
-    { user } = useCurrentUser();
+  const router = useRouter();
+  const search = useSearchParams();
+  const { user } = useCurrentUser();
   const params = directoryParams(search);
-  const [draft, setDraft] = useState(params.q),
-    [lastQ, setLastQ] = useState(params.q);
+  const [draft, setDraft] = useState(params.q);
+  const [lastQ, setLastQ] = useState(params.q);
   if (lastQ !== params.q) {
     setLastQ(params.q);
     setDraft(params.q);
@@ -69,11 +69,15 @@ export function DirectoryPage() {
   }, [draft, params.q, search, router]);
   const data = query.data;
   useEffect(() => {
-    if (!data || data.page === params.page) return;
+    if (!data) return;
     const next = new URLSearchParams(search.toString());
-    next.set("page", String(data.page));
-    router.replace("/directory?" + next, { scroll: false });
-  }, [data, params.page, search, router]);
+    if (next.has("page") || data.page !== 1)
+      next.set("page", String(data.page));
+    if (next.toString() === search.toString()) return;
+    router.replace("/directory" + (next.size ? "?" + next : ""), {
+      scroll: false,
+    });
+  }, [data, search, router]);
   return (
     <>
       <Heading

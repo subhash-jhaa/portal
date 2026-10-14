@@ -9,10 +9,13 @@ export default async function PortalLayout({
 }) {
   const session = await requireSession();
   return (
-    <AuthProvider user={session.user}>
-      <QueryProvider key={session.user.id}>
+    <QueryProvider key={session.user.id + ":" + session.user.role}>
+      <AuthProvider
+        key={session.user.id + ":" + session.user.role}
+        user={session.user}
+      >
         <AppShell>{children}</AppShell>
-      </QueryProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </QueryProvider>
   );
 }

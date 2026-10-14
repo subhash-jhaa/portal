@@ -36,6 +36,5 @@ export const config = {
     "/directory/:path*",
     "/documents/:path*",
     "/payslip/:path*",
-    "/projects/:path*",
   ],
 };

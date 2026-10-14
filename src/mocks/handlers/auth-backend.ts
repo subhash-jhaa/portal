@@ -6,10 +6,8 @@ import {
   type CurrentUser,
 } from "@/lib/types/auth";
 import { mockSigningKey, verifyAccessToken } from "@/lib/auth/token";
-import { employee as fixtureEmployee, payroll } from "@/lib/design/fixtures";
+import { demoRecords } from "@/mocks/fixtures/demo-records";
 import { contactInputSchema, type Employee } from "@/lib/types/employee";
-import { createProjectSchema } from "@/lib/types/project";
-import { initialProjects } from "@/mocks/fixtures/projects";
 import {
   createRegisteredAccount,
   authenticateRegisteredAccount,
@@ -20,6 +18,7 @@ import {
 import { directoryEmployees } from "@/mocks/fixtures/employees";
 import { colleagueSchema, directoryParams } from "@/lib/types/directory";
 import { employeeDocuments } from "@/mocks/fixtures/documents";
+import { canViewWorkforce } from "@/lib/auth/permissions";
 const base = "http://growmer.mock.internal/api";
 export const demoUsers = [
   {
@@ -42,12 +41,10 @@ export const demoUsers = [
   },
 ];
 const employees = new Map<string, Employee>();
-let projects = structuredClone(initialProjects);
 const revoked = new Map<string, number>();
 export function resetAuthMocks() {
   employees.clear();
   revoked.clear();
-  projects = structuredClone(initialProjects);
 }
 function failure(status: number, code: string, message: string) {
   return HttpResponse.json({ error: { code, message } }, { status });
@@ -99,25 +96,67 @@ async function profile(user: CurrentUser, createdAt?: string) {
     return employees.get(user.id)!;
   }
   if (!employees.has(user.id))
-    employees.set(user.id, {
-      ...fixtureEmployee,
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      initials: user.role === "admin" ? "NK" : "AM",
-      role:
-        user.role === "admin" ? "People Operations Lead" : fixtureEmployee.role,
-      department:
-        user.role === "admin"
-          ? "People Operations"
-          : fixtureEmployee.department,
-      manager: user.role === "admin" ? "Priya Rao" : fixtureEmployee.manager,
-      emergencyContact: "",
-      accountEnd: "4821",
-    });
+    employees.set(user.id, structuredClone(demoRecords[user.id]!.employee));
   return employees.get(user.id)!;
 }
+
+async function workforceEmployees() {
+  const records = new Map(directoryEmployees.map((item) => [item.id, item]));
+  for (const entry of demoUsers)
+    records.set(entry.user.id, await profile(entry.user));
+  for (const account of await listRegisteredAccounts())
+    records.set(
+      account.user.id,
+      await profile(account.user, account.createdAt),
+    );
+  for (const [id, item] of employees) records.set(id, item);
+  return [...records.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
 export const authBackendHandlers = [
+  http.get(base + "/admin/overview", async ({ request }) => {
+    const session = await identity(request);
+    if (!session)
+      return failure(401, "SESSION_EXPIRED", "Please sign in again.");
+    if (!canViewWorkforce(session.user))
+      return failure(403, "FORBIDDEN", "Admin access is required.");
+    const state = new URL(request.url).searchParams.get("demoState");
+    if (state === "loading") await delay("infinite");
+    else await delay(250);
+    if (state === "expired")
+      return failure(401, "SESSION_EXPIRED", "Please sign in again.");
+    if (state === "error")
+      return failure(
+        503,
+        "UNAVAILABLE",
+        "The workforce service is unavailable. Please retry.",
+      );
+    const all = state === "empty" ? [] : await workforceEmployees();
+    const counts = new Map<string, number>();
+    for (const employee of all)
+      if (employee.department !== "Not assigned")
+        counts.set(
+          employee.department,
+          (counts.get(employee.department) || 0) + 1,
+        );
+    return HttpResponse.json({
+      totalEmployees: all.length,
+      unassignedEmployees: all.filter(
+        (employee) => employee.department === "Not assigned",
+      ).length,
+      departments: [...counts]
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)),
+      recentJoiners: all
+        .filter((employee) => Number.isFinite(Date.parse(employee.joined)))
+        .sort(
+          (a, b) =>
+            Date.parse(b.joined) - Date.parse(a.joined) ||
+            a.id.localeCompare(b.id),
+        )
+        .slice(0, 5)
+        .map((employee) => colleagueSchema.parse(employee)),
+    });
+  }),
   http.post(base + "/auth/register", async ({ request }) => {
     await delay(250);
     const parsed = registrationSchema.safeParse(
@@ -223,19 +262,7 @@ export const authBackendHandlers = [
         "UNAVAILABLE",
         "The employee service is unavailable. Please retry.",
       );
-    const records = new Map(directoryEmployees.map((item) => [item.id, item]));
-    for (const entry of demoUsers)
-      records.set(entry.user.id, await profile(entry.user));
-    for (const account of await listRegisteredAccounts())
-      records.set(
-        account.user.id,
-        await profile(account.user, account.createdAt),
-      );
-    records.set(session.user.id, await profile(session.user));
-    for (const [id, item] of employees) records.set(id, item);
-    const all = [...records.values()].sort((a, b) =>
-      a.name.localeCompare(b.name),
-    );
+    const all = await workforceEmployees();
     const params = directoryParams(url.searchParams);
     const filtered =
       state === "empty"
@@ -332,6 +359,7 @@ export const authBackendHandlers = [
       });
     }
     const employee = await profile(session.user);
+    const payroll = demoRecords[session.user.id]?.payslip;
     if (params.resource === "profile")
       return HttpResponse.json(
         state === "empty"
@@ -341,11 +369,7 @@ export const authBackendHandlers = [
     if (params.resource === "dashboard")
       return HttpResponse.json({
         employee,
-        latestPayslip:
-          state === "empty" ||
-          !demoUsers.some((entry) => entry.user.id === session.user.id)
-            ? null
-            : payroll,
+        latestPayslip: state === "empty" || !payroll ? null : payroll,
         profileActionCount: employee.emergencyContact ? 0 : 1,
         announcement:
           "Please review your contact information before the next payroll cycle.",
@@ -355,7 +379,7 @@ export const authBackendHandlers = [
         employee,
         payslip:
           state === "empty" ||
-          !demoUsers.some((entry) => entry.user.id === session.user.id) ||
+          !payroll ||
           url.searchParams.get("period") !== payroll.period
             ? null
             : payroll,
@@ -378,35 +402,5 @@ export const authBackendHandlers = [
     const employee = { ...(await profile(session.user)), ...parsed.data };
     employees.set(session.user.id, employee);
     return HttpResponse.json(employee);
-  }),
-  http.get(base + "/projects", async ({ request }) => {
-    if (!(await identity(request)))
-      return failure(401, "SESSION_EXPIRED", "Please sign in again.");
-    return HttpResponse.json({ items: projects, total: projects.length });
-  }),
-  http.get(base + "/projects/:id", async ({ request, params }) => {
-    if (!(await identity(request)))
-      return failure(401, "SESSION_EXPIRED", "Please sign in again.");
-    const project = projects.find((item) => item.id === params.id);
-    return project
-      ? HttpResponse.json(project)
-      : failure(404, "NOT_FOUND", "Project not found.");
-  }),
-  http.post(base + "/projects", async ({ request }) => {
-    if (!(await identity(request)))
-      return failure(401, "SESSION_EXPIRED", "Please sign in again.");
-    const parsed = createProjectSchema.safeParse(
-      await request.json().catch(() => null),
-    );
-    if (!parsed.success)
-      return failure(422, "VALIDATION_ERROR", "Enter valid project details.");
-    const project = {
-      ...parsed.data,
-      id: crypto.randomUUID(),
-      status: "planning" as const,
-      createdAt: new Date().toISOString(),
-    };
-    projects.unshift(project);
-    return HttpResponse.json(project, { status: 201 });
   }),
 ];

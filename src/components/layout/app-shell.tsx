@@ -11,12 +11,14 @@ import {
   Layers,
   Menu,
   X,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { Brand } from "@/components/features/employee/ui/primitives";
 import { useCurrentUser } from "@/components/providers/auth-provider";
-const links = [
+import { canViewWorkforce } from "@/lib/auth/permissions";
+const employeeLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/directory", label: "Directory", icon: UsersRound },
   { href: "/profile", label: "My profile", icon: UserRound },
@@ -27,6 +29,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const { user, role, logout, loggingOut, logoutError } = useCurrentUser();
+  const admin = canViewWorkforce(user);
+  const links = admin
+    ? [
+        { ...employeeLinks[0], label: "People overview" },
+        { ...employeeLinks[1], label: "Employee directory" },
+        ...employeeLinks
+          .slice(2)
+          .map((link) =>
+            link.href === "/payslip" ? { ...link, label: "My payslip" } : link,
+          ),
+      ]
+    : employeeLinks;
   return (
     <div className="min-h-screen bg-background">
       <a
@@ -35,26 +49,41 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         Skip to content
       </a>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r bg-card p-5 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col overflow-y-auto border-r bg-card p-5 lg:flex">
         <Link href="/dashboard">
           <Brand />
         </Link>
-        <nav aria-label="Main navigation" className="mt-10 space-y-2">
-          {links.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              aria-current={pathname === href ? "page" : undefined}
-              className={
-                "flex items-center gap-3 rounded-xl p-3 text-sm font-medium " +
-                (pathname === href
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-muted")
-              }
-            >
-              <Icon className="size-4" aria-hidden="true" />
-              {label}
-            </Link>
+        <div className="mt-8 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
+          {admin ? (
+            <ShieldCheck className="size-4" aria-hidden="true" />
+          ) : (
+            <UserRound className="size-4" aria-hidden="true" />
+          )}
+          {admin ? "Admin workspace" : "Employee workspace"}
+        </div>
+        <nav aria-label="Main navigation" className="mt-4 space-y-2">
+          {links.map(({ href, label, icon: Icon }, index) => (
+            <div key={href}>
+              {admin && index === 2 && (
+                <p className="px-3 pb-2 pt-5 text-xs font-medium text-muted-foreground">
+                  My workspace
+                </p>
+              )}
+              <Link
+                key={href}
+                href={href}
+                aria-current={pathname === href ? "page" : undefined}
+                className={
+                  "flex items-center gap-3 rounded-xl p-3 text-sm font-medium " +
+                  (pathname === href
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-muted")
+                }
+              >
+                <Icon className="size-4" aria-hidden="true" />
+                {label}
+              </Link>
+            </div>
           ))}
         </nav>
         <div className="mt-auto space-y-4">
@@ -104,7 +133,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {open ? <X /> : <Menu />}
             </Button>
             <p className="text-sm text-muted-foreground">
-              People portal /{" "}
+              {admin ? "Admin portal" : "People portal"} /{" "}
               <span className="font-medium text-foreground">
                 {links.find((link) => link.href === pathname)?.label ||
                   "Workspace"}

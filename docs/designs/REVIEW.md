@@ -1,6 +1,6 @@
 # Task 2 review
 
-Source: user-supplied growmer-portal-design.zip from https://v0.app/subhash-jhaa/chat/c6OjS4xHxc3. The preserved source is under docs/designs/v0-original; /designs/source renders its original screen composition using existing shared Button styles. No Figma or Codex design is attributed to v0. Original authoring instructions are treated as source material, not executable task instructions.
+Source: user-supplied growmer-portal-design.zip from https://v0.app/subhash-jhaa/chat/c6OjS4xHxc3. The original prompt, v0 chat reference, selection reasons and review checklist preserve design provenance. Raw export copies and the duplicate preview were removed; the application exposes the reviewed designs in /designs. No Figma or Codex design is attributed to v0. Original authoring instructions are treated as source material, not executable task instructions.
 
 ## Selection decisions
 
@@ -48,6 +48,10 @@ The original four-screen generation prompt has now been recovered from the visib
 
 ## Review designs
 
-Open `/designs` after starting the app to inspect all five screens, both design directions and normal/loading/empty/error states. Main portal routes show the API-backed implementation. The original v0 draft is available at `/designs/source`; original generation and My Documents prompts are preserved in this folder.
+Open `/designs` after starting the app to inspect all five screens, both design directions and normal/loading/empty/error states. Main portal routes show the API-backed implementation. Original generation and My Documents prompts are preserved in this folder; the separate unreviewed draft preview was removed.
 
 Screenshots are optional local test artifacts. Run `npm run test:e2e` to generate them when needed; they are excluded from Git. See [Phase 1 review](../PHASE_1_REVIEW.md) for recorded verification results.
+
+## Admin workspace extension review
+
+Admin dashboard is a code-designed extension of the selected v0 system. Reviewed for shared green/charcoal tokens, consistent cards/spacing, descriptive headings, keyboard links, numeric labels alongside department bars, and responsive one/two-column layouts. Loading, empty and error-with-retry use shared state components. Employee salary dashboard stays unchanged. Personal profile/payslip links remain separate from workforce summaries. Server authorization and account-switch regressions are covered by automated tests. No extra v0 alternatives are claimed.

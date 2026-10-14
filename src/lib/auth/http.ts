@@ -36,12 +36,12 @@ export function checkMutationOrigin(request: NextRequest) {
       "INVALID_ORIGIN",
       "Please submit this request from the Growmer portal.",
     );
-  if (
-    !request.headers
-      .get("content-type")
-      ?.toLowerCase()
-      .startsWith("application/json")
-  )
+  const contentType = request.headers
+    .get("content-type")
+    ?.split(";", 1)[0]
+    .trim()
+    .toLowerCase();
+  if (contentType !== "application/json")
     return jsonError(415, "INVALID_CONTENT_TYPE", "Send a JSON request.");
   return null;
 }

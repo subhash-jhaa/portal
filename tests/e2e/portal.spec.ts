@@ -109,13 +109,13 @@ test("main empty and loading states are API-driven", async ({ page }) => {
     page.getByRole("status", { name: "Loading payslip" }),
   ).toBeVisible();
 });
-test("health and original project API example remain available", async ({
+test("health and required employee APIs remain available", async ({
   page,
   request,
 }) => {
   expect((await request.get("/health")).status()).toBe(200);
-  await page.goto("/projects");
-  await expect(
-    page.getByText("Customer portal", { exact: true }),
-  ).toBeVisible();
+  expect((await page.request.get("/api/employee/profile")).status()).toBe(200);
+  expect((await page.request.get("/api/employee/documents")).status()).toBe(
+    200,
+  );
 });

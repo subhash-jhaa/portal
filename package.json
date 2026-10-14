@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "node scripts/start.mjs",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings=0",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
@@ -15,7 +15,9 @@
     "check:tokens": "node scripts/check-design-tokens.mjs",
     "sync:tokens": "node scripts/sync-design-tokens.mjs",
     "setup:env": "node scripts/setup-env.mjs",
-    "docker:up": "node scripts/docker-up.mjs"
+    "docker:up": "node scripts/docker-up.mjs",
+    "test:performance": "node scripts/measure-cold-load.mjs",
+    "check": "npm run lint && npm run typecheck && npm run format:check && npm run check:tokens && npm test"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

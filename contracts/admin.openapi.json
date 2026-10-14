@@ -1,0 +1,89 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "PROVISIONAL Growmer admin overview extension",
+    "version": "0.1.0",
+    "description": "Requires Python approval. Read-only admin overview; does not expose payroll or emergency contacts."
+  },
+  "paths": {
+    "/admin/overview": {
+      "get": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Requires verified role admin. Aggregates the full directory, excludes unassigned records from department counts, and returns at most five recent joiners by joining date descending.",
+        "responses": {
+          "200": {
+            "description": "Workforce overview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "totalEmployees",
+                    "unassignedEmployees",
+                    "departments",
+                    "recentJoiners"
+                  ],
+                  "properties": {
+                    "totalEmployees": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "unassignedEmployees": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "departments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["name", "count"],
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": 1
+                          }
+                        }
+                      }
+                    },
+                    "recentJoiners": {
+                      "type": "array",
+                      "maxItems": 5,
+                      "items": {
+                        "$ref": "./employee.openapi.json#/components/schemas/Colleague"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, expired or revoked session"
+          },
+          "403": {
+            "description": "Employee role forbidden"
+          },
+          "503": {
+            "description": "Service unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

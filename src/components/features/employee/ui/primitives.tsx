@@ -1,13 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CircleAlert, FileText, Sparkles } from "lucide-react";
+import { CircleAlert, FileText } from "lucide-react";
+import { BrandMark } from "@/components/layout/brand-mark";
 import type { DisplayState } from "@/lib/design/types";
 export function Brand() {
   return (
     <div className="flex items-center gap-3">
       <span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground">
-        <Sparkles className="size-5" aria-hidden="true" />
+        <BrandMark />
       </span>
       <div>
         <p className="font-semibold tracking-tight">growmer</p>

@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { BrandMark } from "@/components/layout/brand-mark";
 export function LoginFrame({
   children,
   variant = "split",
@@ -18,7 +18,7 @@ export function LoginFrame({
       {variant === "split" && (
         <section className="hidden flex-col justify-between bg-primary p-10 text-primary-foreground lg:flex">
           <div>
-            <Sparkles className="mb-8 size-8" aria-hidden="true" />
+            <BrandMark className="mb-8 size-10" />
             <p className="text-sm font-medium">
               Employee self-service, made clear.
             </p>

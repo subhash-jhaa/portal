@@ -21,19 +21,18 @@ Mock credentials only. Login sets an httpOnly session cookie; the browser receiv
 
 ## Routes
 
-| Route                                                               | Purpose                                                                  |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| /login                                                              | Public validated sign-in; signed-in users redirect to dashboard          |
-| /register                                                           | Public self-registration; employee role; sign in after creation          |
-| /, /dashboard                                                       | Protected current employee summary and latest payroll                    |
-| /directory, /directory/[id]                                         | Protected searchable employee directory and read-only colleague profiles |
-| /documents                                                          | Protected My Documents list with normal/loading/empty/error states       |
-| /profile                                                            | Protected profile and API-backed contact updates                         |
-| /payslip                                                            | Protected period statement, including empty records                      |
-| /projects                                                           | Protected retained Task 1 API example                                    |
-| /designs, /designs/source                                           | Public fake-data design review and archived v0 composition               |
-| /health                                                             | Public frontend liveness JSON, HTTP 200                                  |
-| /api/auth/login, /api/auth/me, /api/auth/logout, /api/auth/register | Server authentication endpoints                                          |
+| Route                                                               | Purpose                                                                                  |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| /login                                                              | Public validated sign-in; signed-in users redirect to dashboard                          |
+| /register                                                           | Public self-registration; employee role; sign in after creation                          |
+| /, /dashboard                                                       | Protected role-based dashboard: own summary for employees, workforce overview for admins |
+| /directory, /directory/[id]                                         | Protected searchable employee directory and read-only colleague profiles                 |
+| /documents                                                          | Protected My Documents list with normal/loading/empty/error states                       |
+| /profile                                                            | Protected profile and API-backed contact updates                                         |
+| /payslip                                                            | Protected period statement, including empty records                                      |
+| /designs                                                            | Public reviewed design alternatives and all four states                                  |
+| /health                                                             | Public frontend liveness JSON, HTTP 200                                                  |
+| /api/auth/login, /api/auth/me, /api/auth/logout, /api/auth/register | Server authentication endpoints                                                          |
 
 ## Architecture
 
@@ -72,7 +71,7 @@ Demo scenarios: /dashboard?demoState=error, /profile?demoState=empty, /payslip?d
 
 ## Design and contracts
 
-DESIGN_GUIDE.md defines typography, spacing, colors and component rules. docs/designs records prompts, reviews, original v0 source and review notes. src/lib/design/palette.json generates tokens.css (npm run sync:tokens); npm run check:tokens verifies consistency. Employee and auth contracts under contracts are PROVISIONAL until Python team approval. Original project examples remain regression tested.
+DESIGN_GUIDE.md defines typography, spacing, colors and component rules. docs/designs records prompts, reviews, v0 provenance and review notes. src/lib/design/palette.json generates tokens.css (npm run sync:tokens); npm run check:tokens verifies consistency. Employee and auth contracts under contracts are PROVISIONAL until Python team approval. The API boundary is regression tested against employee endpoints.
 
 ## Checks
 
@@ -107,3 +106,23 @@ Commit source, tests, scripts, contracts, package manifests and lockfile, build 
 The empty public directory is preserved with public/.gitkeep because the Dockerfile copies it. npm ci restores dependencies; npm run build restores build output; npm run typecheck regenerates Next.js declarations. Historical integration/validation notes and the separate worksheet were consolidated into the current review package and design review.
 
 Design screenshots are optional local artifacts and are excluded from Git. Review screens and states through `/designs` or regenerate images with `npm run test:e2e`.
+
+## Role-based workspaces
+
+Employees land on their personal salary/action dashboard. Admins land on a distinct People operations overview with workforce totals, department counts, awaiting-assignment counts and recent joiners. Admin navigation separates people operations from My workspace. Both roles keep their own editable contact profile, documents and payslip; colleague profiles remain read-only. Admin access does not grant payroll access to other employees or allow self-registration as admin.
+
+The admin overview endpoint is server-authorized (403 for employee sessions, 401 when signed out). Counts reuse the full directory source, including registered accounts. Its provisional backend contract is contracts/admin.openapi.json. All requests go through lib/api, with user-specific query keys. Admin loading/empty/error states use the same shared components and green/charcoal theme. Review with /dashboard?demoState=loading, empty or error while signed in as admin.
+
+## Cold-load performance check
+
+With the production Docker app running (npm run docker:up), run npm ci and install Chromium once with npx playwright install chromium if necessary. Then run npm run test:performance. It measures login, dashboard and My Documents three times each, using fresh browser contexts, disabled HTTP cache, simulated slow 4G and 4× CPU slowdown. It also checks that protected-page skeletons render with JavaScript disabled. The command fails when the declared timing/layout budgets are exceeded.
+
+Defaults to http://localhost:3006. To measure another local production port in PowerShell, set $env:PERF_BASE_URL = 'http://localhost:3005' before running the command. PERF_SAMPLES accepts 3–10 repetitions per route. Use a production build with demo authentication enabled and avoid concurrent builds/tests during measurement. Results are local lab evidence with a warm server, not a remote-device guarantee or field percentile.
+
+Raw JSON is written to test-results/performance/cold-load.json and is ignored by Git. Recorded results, budget definitions and measurement limits are in [Phase 1 performance evidence](docs/PHASE_1_REVIEW.md#measured-cold-load-performance).
+
+## Review quality gate
+
+Run npm run check for zero-warning lint, generated-route TypeScript, formatting, design-token consistency and unit/API tests. Then run npm run build and npm run test:e2e against the desired production port. npm run test:performance checks the documented lab budgets separately.
+
+Dependency audit checked 14 October 2026: the production dependency audit is clean; the complete audit reports a development-only chain through eslint-config-next → fast-glob → micromatch → braces. [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) lists no patched braces release. Do not force npm's proposed downgrade of Next tooling to version 14. Keep lint glob configuration trusted and recheck npm audit as upstream fixes become available. No claim of a completely clean full dependency audit is made.

@@ -108,12 +108,6 @@ export function DesignGallery() {
             <p className="font-medium">{employee.name}</p>
             <p className="mt-1 text-xs">{employee.id} · Fictional employee</p>
           </div>
-          <Link
-            href="/designs/source"
-            className="mt-6 block text-xs text-primary underline"
-          >
-            Original v0 export
-          </Link>
         </aside>
         <div className="min-w-0 flex-1">
           <header className="flex items-center justify-between border-b bg-card px-5 py-4 lg:hidden">

@@ -4,7 +4,7 @@ Implementation: Tasks 1–4, self-registration extension, My Documents exercise.
 
 ## Teammate demonstration
 
-With Node.js 22.12+ and Docker installed, open the project folder and run npm run docker:up. It generates the ignored mock environment when absent and builds/starts the separate growmer-assignment container. Visit http://localhost:3006/login and use the employee demo account documented in README.md. Search a colleague in Directory, open their read-only public profile, update your own contacts in My profile, and inspect My Documents. Sign out and verify that protected pages redirect. Repeat as the predefined admin to check the role helper; role-specific management screens are future scope.
+With Node.js 22.12+ and Docker installed, open the project folder and run npm run docker:up. It generates the ignored mock environment when absent and builds/starts the separate growmer-assignment container. Visit http://localhost:3006/login and use the employee demo account documented in README.md. Search a colleague in Directory, open their read-only public profile, update your own contacts in My profile, and inspect My Documents. Sign out and verify that protected pages redirect. Repeat as the predefined admin to review workforce totals, department distribution, recent joiners and directory shortcuts. Personal profiles and payslips remain scoped to each signed-in employee; editing colleagues is outside scope.
 
 Use /documents?demoState=loading, empty or error in mock mode to demonstrate all states. Use /designs to compare both document options and all five screen states. DESIGN_GUIDE.md defines what should match on desktop/mobile and light/dark themes.
 
@@ -24,7 +24,7 @@ Python schemas, JWT claims/keys and endpoint behavior still need team approval a
 
 ## Verification
 
-Passed: ESLint, TypeScript/generated routes, Prettier, canonical theme tokens, 45 Vitest unit/API tests and production build. All 35 Playwright checks passed locally on port 3005 and against Docker on port 3006. The one-command launcher succeeded. Docker remains healthy under growmer-assignment, UID 1001; Node is present and npm/Yarn are absent from the runtime.
+Passed: ESLint, TypeScript/generated routes, Prettier, canonical theme tokens, 54 Vitest unit/API tests and production build. All 42 Playwright checks passed against Docker on port 3006. The local browser run also passed all existing task checks and the focused admin suite passed on port 3005. The one-command launcher succeeded. Docker remains healthy under growmer-assignment, UID 1001; Node is present and npm/Yarn are absent from the runtime.
 
 An independent container restart check created a new fictional account, restarted only Growmer, then resolved its profile by ID before any directory warm-up, searched it, verified token-subject document ownership, signed in with the registered account and logged out. All assertions passed.
 
@@ -42,3 +42,35 @@ These are reference notes, not answers attributed to the learner. Explain each i
 2. **Why use httpOnly cookies?** Browser JavaScript cannot read the token. Secure/SameSite settings, trusted-origin checks and server verification remain necessary.
 3. **What changed after AI generation?** Semantic tokens replaced literal colors; forms remain visible on error; skeletons follow screen structure; documents sort newest first and use labeled mobile cards with honest disabled previews. See designs/REVIEW.md and designs/DOCUMENTS.md.
 4. **What are the four states?** Normal/success, loading, empty and error. An empty result is different from a failed request.
+
+## Role-based workspace extension
+
+Admin sessions now receive an organization overview on /dashboard; employees retain their personal dashboard. Both keep self-service profile, documents, payslip and directory features. Admin overview is read-only and its new provisional GET /admin/overview contract requires backend admin authorization. Real Python integration still requires contract agreement.
+
+## Scope cleanup
+
+Removed the legacy Projects demo (page, feature components, API client/types/fixture, backend handlers and its standalone contract) and three raw v0 archive copies. Employee endpoints now exercise the generic API boundary tests. Fixed the GET API allowlist to test the requested path before forwarding; unknown and removed endpoints are rejected. Reviewed design alternatives, prompts, review notes, shared controls, My Documents, registration and the explicitly requested admin workspace remain. Lint, formatting, tokens, 49 unit/API tests, production builds and 40 Docker browser checks passed after cleanup. Removed pages and API requests return 404; generated review captures and test reports were cleared after verification.
+
+## Measured cold-load performance
+
+Measured 14 October 2026 at 20:50 IST against the production Growmer Docker app at http://localhost:3006, using Chromium 156.0.8078.4, host Node v24.15.0, and three sequential samples per route (nine navigations). Every sample uses a fresh browser context, disabled HTTP cache, blocked service workers and no client-query cache. Authenticated route measurements establish only the demo session cookie before navigation; sign-in time is excluded from those samples. The production server is already running: this measures a cold browser cache, not container startup or a cold server process.
+
+Controlled desktop profile: 1365 × 900 viewport, simulated 150 ms network latency, 1.6 Mbps download / 0.75 Mbps upload, and 4× renderer CPU slowdown. These localhost lab results do not establish performance on every device or over a remote deployment.
+
+| Route      | Samples | Median FCP | Median skeleton | Slowest skeleton | Median UI ready | Slowest UI ready | Maximum initial CLS |
+| ---------- | ------- | ---------- | --------------- | ---------------- | --------------- | ---------------- | ------------------- |
+| /login     | 3       | 0.87 s     | N/A             | N/A              | 2.46 s          | 3.38 s           | 0.0015              |
+| /dashboard | 3       | 0.70 s     | 0.68 s          | 0.78 s           | 3.37 s          | 3.44 s           | 0.0003              |
+| /documents | 3       | 0.71 s     | 0.73 s          | 0.74 s           | 3.22 s          | 3.30 s           | 0.0000              |
+
+FCP comes from the browser Paint Timing API. Skeleton time is the first animation frame in which the named loading region has visible geometry and styling. UI ready means the login submit button is enabled after hydration, the employee dashboard's View payslip action is visible after data loads, or the document table is visible. CLS is observed from navigation until two animation frames after UI ready. The raw report also records TTFB, JavaScript transfer bytes through UI ready and an observed LCP candidate; that candidate is not a final field LCP or an official time-to-interactive result.
+
+Project-specific pass/fail budgets were set before the repeated run: FCP ≤ 1.8 s, skeleton ≤ 1.8 s on protected routes, UI ready ≤ 6 s, and initial CLS ≤ 0.1. Every sample passed. Dashboard and My Documents also passed a separate JavaScript-disabled check, proving their skeletons are present in server-rendered HTML and do not wait for hydration. No demoState or artificial API delay was used for these measurements; the normal MSW response delay remains part of the application.
+
+Repeat with npm run test:performance after starting the production app. Raw samples, environment details, budgets and failures are written to ignored test-results/performance/cold-load.json. Three samples are a small lab check, not field percentiles; timing varies with host load. This supplies measured evidence of sub-second median loading feedback under the stated profile while complete data still takes roughly three seconds. The existing skeleton implementation meets these targets, so no extra runtime optimization was added solely to improve the report.
+
+## Code-quality review
+
+The npm run check gate enforces zero-warning lint, TypeScript, formatting, token consistency and unit/API regressions. Latest checks: 54 unit/API tests, 42 Docker browser tests, production builds and the throttled cold-load check passed. Session polling is single-flight and ignores late results after sign-out/unmount; ending/changing identities cancels and clears cached data, and cross-tab identity changes refresh the server workspace. Directory pagination normalizes malformed URLs while preserving filters. The upstream adapter handles bodyless responses and malformed JSON, mutation content types are checked exactly, and contact hints are linked to their inputs. Production dependency audit reported no vulnerabilities; the full audit retains five development-only entries from one unpatched braces advisory, documented in README.md. No rating or external acceptance is claimed.
+
+The three-sample-per-route cold-cache rerun used the same documented slow-4G/4×-CPU profile and passed every budget plus both JavaScript-disabled skeleton checks. /login: median FCP 0.95 s, UI ready 2.52 s; /dashboard: median FCP 0.76 s, UI ready 3.81 s, skeleton 0.74 s; /documents: median FCP 0.71 s, UI ready 3.19 s, skeleton 0.80 s. These are local lab results with a warm production server.

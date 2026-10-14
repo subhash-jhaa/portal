@@ -46,3 +46,9 @@ Preview screen/direction/state controls belong to the design gallery, not a prod
 ## My Documents
 
 Use a compact semantic table for file metadata on desktop and labeled file cards on mobile. Sort updated dates newest first. Keep the heading and explanatory copy visible in normal/loading/empty/error states. Use file-row skeletons, a document-specific empty message with an HR next step, and an alert with retry for failures. File previews remain disabled and explicitly explained while only fake metadata exists. Both reviewed v0 options are preserved in /designs; see docs/designs/DOCUMENTS.md.
+
+## Role-based dashboard extension
+
+Keep the same green brand, fonts, spacing, shared cards and charcoal dark surfaces for both roles. Employee dashboard emphasizes personal payroll and profile actions. Admin dashboard emphasizes people operations: workforce summary cards, department distribution with text counts, recent joiners and directory links. Separate personal actions under My workspace. Loading uses skeletons, empty shows no fabricated records, errors expose an explicit retry. The original reviewed v0 login/profile/payslip and employee dashboard designs remain available in /designs. This admin extension is implemented in code using that design system, not claimed as additional v0-generated options.
+
+Brand mark: use the simple outlined G monogram from components/layout/brand-mark.tsx beside the Growmer wordmark. Keep it within the existing green rounded badge in the shell; use the same mark on authentication panels and the browser icon. The monogram is a brand asset; interface icons continue to use Lucide. Avoid sparkle or AI-style decoration.

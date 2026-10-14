@@ -8,17 +8,19 @@ import {
 import { clearSession, checkMutationOrigin, jsonError } from "@/lib/auth/http";
 import { routeFailure, upstreamResponse } from "@/lib/auth/routes";
 import { contactInputSchema } from "@/lib/types/employee";
-import { createProjectSchema } from "@/lib/types/project";
+import { canViewWorkforce } from "@/lib/auth/permissions";
 type Context = { params: Promise<{ path: string[] }> };
 async function handle(request: NextRequest, context: Context) {
   try {
     const path = "/" + (await context.params).path.join("/");
     const allowed =
       request.method === "GET"
-        ? /^\/(employee\/(profile|dashboard|payslip|documents|directory(?:\/[a-zA-Z0-9-]+)?)|projects(?:\/[a-zA-Z0-9-]+)?)$/
+        ? /^\/(admin\/overview|employee\/(profile|dashboard|payslip|documents|directory(?:\/[a-zA-Z0-9-]+)?))$/.test(
+            path,
+          )
         : request.method === "PATCH"
           ? path === "/employee/profile"
-          : request.method === "POST" && path === "/projects";
+          : false;
     if (!allowed) return jsonError(404, "NOT_FOUND", "Endpoint not found.");
     if (request.method !== "GET") {
       const rejected = checkMutationOrigin(request);
@@ -35,11 +37,13 @@ async function handle(request: NextRequest, context: Context) {
           "Your session has ended. Please sign in again.",
         ),
       );
+    if (path === "/admin/overview" && !canViewWorkforce(session.user))
+      return jsonError(403, "FORBIDDEN", "Admin access is required.");
     let body;
     if (request.method !== "GET") {
-      const schema =
-        path === "/employee/profile" ? contactInputSchema : createProjectSchema;
-      const parsed = schema.safeParse(await request.json().catch(() => null));
+      const parsed = contactInputSchema.safeParse(
+        await request.json().catch(() => null),
+      );
       if (!parsed.success)
         return jsonError(
           422,
@@ -74,5 +78,4 @@ async function handle(request: NextRequest, context: Context) {
   }
 }
 export const GET = handle;
-export const POST = handle;
 export const PATCH = handle;

@@ -78,6 +78,7 @@ it("only allows return redirects to known portal paths", () => {
     "https://evil.example",
     "//evil.example",
     "/login",
+    "/projects",
     "/dashboard/../../login",
     "/dashboard\\evil",
   ])

@@ -132,3 +132,23 @@ test("backend rejects immutable fields and colleague edits", async ({
   expect(record).not.toHaveProperty("accountEnd");
   expect(record).not.toHaveProperty("emergencyContact");
 });
+
+test("normalizes invalid and out-of-range page URLs while preserving filters", async ({
+  page,
+}) => {
+  for (const value of ["-1", "0", "abc", "1.5", "9999"]) {
+    await page.goto(
+      "/directory?q=Aditi%20Sharma&department=Engineering&page=" + value,
+    );
+    await expect(
+      page.getByRole("link", { name: "Aditi Sharma", exact: true }),
+    ).toBeVisible();
+    await expect
+      .poll(() => new URL(page.url()).searchParams.get("page"))
+      .toBe("1");
+    expect(new URL(page.url()).searchParams.get("q")).toBe("Aditi Sharma");
+    expect(new URL(page.url()).searchParams.get("department")).toBe(
+      "Engineering",
+    );
+  }
+});

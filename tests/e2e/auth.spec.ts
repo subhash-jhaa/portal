@@ -9,7 +9,6 @@ test("protects all portal pages and APIs while keeping designs and health public
     "/dashboard",
     "/profile",
     "/payslip",
-    "/projects",
     "/directory",
     "/documents",
   ]) {
@@ -22,7 +21,6 @@ test("protects all portal pages and APIs while keeping designs and health public
     "/api/employee/dashboard",
     "/api/employee/directory",
     "/api/employee/documents",
-    "/api/projects",
   ])
     expect((await request.get(path)).status()).toBe(401);
   expect((await request.get("/health")).status()).toBe(200);
@@ -208,4 +206,68 @@ test("rejects cross-origin mutations and unsafe return URLs", async ({
     data: { email: "edited@example.com", phone: "" },
   });
   expect(forbidden.status()).toBe(403);
+});
+
+test("switching accounts in one browser replaces personal dashboard and payslip data", async ({
+  page,
+}) => {
+  for (const [role, name, amount, account] of [
+    ["employee", "Aarav", "₹65,000", "4821"],
+    ["admin", "Neha", "₹1,00,000", "7396"],
+    ["employee", "Aarav", "₹65,000", "4821"],
+  ] as const) {
+    await signIn(page, role);
+    await expect(
+      page.getByRole("heading", { name: "Welcome, " + name }),
+    ).toBeVisible();
+    await expect(page.getByTestId("current-role")).toHaveText(role);
+    if (role === "employee")
+      await expect(page.getByRole("main")).toContainText(amount);
+    else await expect(page.getByTestId("admin-overview")).toBeVisible();
+    await page
+      .getByRole("navigation", { name: "Main navigation" })
+      .getByRole("link", {
+        name: role === "admin" ? "My payslip" : "Payslips",
+        exact: true,
+      })
+      .filter({ visible: true })
+      .click();
+    await expect(page.getByRole("main")).toContainText(
+      "Account •••• " + account,
+    );
+    await expect(page.getByRole("main")).toContainText(amount);
+    await page
+      .getByRole("button", { name: "Sign out", exact: true })
+      .filter({ visible: true })
+      .click();
+    await expect(page).toHaveURL(/reason=logged-out/);
+  }
+});
+
+test("refreshes the server workspace when another tab switches the session", async ({
+  page,
+  context,
+}) => {
+  await signIn(page);
+  for (const [email, password, role, name] of [
+    ["neha.kapoor@example.com", "Admin123!", "admin", "Neha"],
+    ["aarav.mehta@example.com", "Employee123!", "employee", "Aarav"],
+  ]) {
+    const response = await context.request.post("/api/auth/login", {
+      headers: { Origin: new URL(page.url()).origin },
+      data: { email, password },
+    });
+    expect(response.status()).toBe(200);
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    await expect(page.getByTestId("current-role")).toHaveText(role);
+    await expect(
+      page.getByRole("heading", { name: "Welcome, " + name }),
+    ).toBeVisible();
+    if (role === "admin")
+      await expect(page.getByTestId("admin-overview")).toBeVisible();
+    else {
+      await expect(page.getByTestId("admin-overview")).toHaveCount(0);
+      await expect(page.getByRole("main")).toContainText("₹65,000");
+    }
+  }
 });

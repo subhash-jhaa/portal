@@ -64,9 +64,19 @@ export function ContactForm({
             type={
               field === "email" ? "email" : field === "phone" ? "tel" : "text"
             }
+            autoComplete={
+              field === "email" ? "email" : field === "phone" ? "tel" : "off"
+            }
             disabled={isSubmitting}
             aria-invalid={!!errors[field]}
-            aria-describedby={errors[field] ? "error-" + field : undefined}
+            aria-describedby={
+              [
+                errors[field] ? "error-" + field : "",
+                field === "phone" ? "profile-phone-hint" : "",
+              ]
+                .filter(Boolean)
+                .join(" ") || undefined
+            }
             {...register(field)}
           />
           {errors[field] && (
@@ -80,7 +90,7 @@ export function ContactForm({
           )}
         </div>
       ))}
-      <p className="text-xs text-muted-foreground">
+      <p id="profile-phone-hint" className="text-xs text-muted-foreground">
         Phone: 7–15 digits, with optional +, spaces, parentheses or hyphens.
         Leave blank if unavailable.
       </p>
