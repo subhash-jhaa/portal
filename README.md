@@ -97,7 +97,7 @@ Open **Directory** after signing in to search forty-two sample employees, filter
 
 Run `npm run docker:up` for environment setup and Docker startup in one command. Open **My Documents** after login to inspect fictional file metadata. No upload or download exists. All four states and both reviewed v0 options are available in `/designs`; live mock scenarios use `/documents?demoState=loading`, `empty` or `error`. Registered employees are discoverable in Directory even before their first login and after server restarts.
 
-Review package: [Phase 1 review](docs/PHASE_1_REVIEW.md). Pending backend agreement: [Python handoff](docs/PYTHON_HANDOFF.md). Learner reference notes: [Self-assessment](docs/PHASE_1_REVIEW.md#self-assessment-reference-notes). AI evidence: [Original v0 prompt](docs/designs/ORIGINAL_PROMPT.md), [My Documents design review](docs/designs/DOCUMENTS.md).
+Review package: [Phase 1 review](docs/PHASE_1_REVIEW.md). Pending backend agreement: [Python handoff](docs/PYTHON_HANDOFF.md). Self-assessment: [Self-assessment](docs/PHASE_1_REVIEW.md#self-assessment). AI evidence: [Original v0 prompt](docs/designs/ORIGINAL_PROMPT.md), [My Documents design review](docs/designs/DOCUMENTS.md).
 
 ## Files for review and GitHub
 

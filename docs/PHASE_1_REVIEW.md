@@ -20,7 +20,7 @@ The previous Node-based runner kept approximately 17.2 MiB of npm and 5.1 MiB of
 
 ## Remaining external or learner steps
 
-Python schemas, JWT claims/keys and endpoint behavior still need team approval and a real-backend integration run. See PYTHON_HANDOFF.md. The self-assessment notes below support the learner's own answers. Human teammate acceptance and sending this review are pending; automated checks do not replace those milestones.
+Python schemas, JWT claims/keys and endpoint behavior still need team approval and a real-backend integration run. See PYTHON_HANDOFF.md. My completed self-assessment answers are recorded below. Human teammate acceptance and sending this review are pending; automated checks do not replace those milestones.
 
 ## Verification
 
@@ -34,14 +34,25 @@ Previous image 295.6 MiB (309990517 bytes); new image 255.3 MiB (267686358 bytes
 
 Review the implemented designs at `/designs` and the signed-in portal routes. Optional screenshots can be regenerated with `npm run test:e2e`; image files are excluded from Git.
 
-## Self-assessment reference notes
+## Self-assessment
 
-These are reference notes, not answers attributed to the learner. Explain each in your own words.
+1. **Why must pages never call fetch directly?**
+   I keep API calls in `src/lib/api/` so I don't have to repeat the same request code on every page. This gives me one place to set the API address, send cookies, check the data coming back, and handle errors. When we connect the Python backend, I can make the request changes there. ESLint also helps me catch any direct `fetch` calls outside the API layer.
 
-1. **Why keep fetch in lib/api?** One API boundary owns addresses, credentials, errors and runtime validation, so backend changes do not spread across screens.
-2. **Why use httpOnly cookies?** Browser JavaScript cannot read the token. Secure/SameSite settings, trusted-origin checks and server verification remain necessary.
-3. **What changed after AI generation?** Semantic tokens replaced literal colors; forms remain visible on error; skeletons follow screen structure; documents sort newest first and use labeled mobile cards with honest disabled previews. See designs/REVIEW.md and designs/DOCUMENTS.md.
-4. **What are the four states?** Normal/success, loading, empty and error. An empty result is different from a failed request.
+2. **Why are httpOnly cookies safer than localStorage for tokens?**
+   I use an `httpOnly` cookie because browser JavaScript cannot read the token inside it. With `localStorage`, a harmful script running on the page could read and steal the token. The browser sends the cookie with requests, and the Next.js server checks the token before allowing access. This reduces the risk of token theft, but I still need secure cookie settings and checks that reject requests from other sites.
+
+3. **What did you change in the AI's design, and why?**
+   I used the v0 design as a starting point and made these changes to make the screens clearer and more consistent:
+
+   - I moved the colors into shared theme tokens so the same green brand works in both light and dark mode.
+   - I kept the login form visible after an error so the user can correct their details without starting again.
+   - I made the loading skeletons follow each page's layout, including My Documents, so users can see where the content will appear.
+   - I added a clear message when a payslip is missing. Showing ₹0 could make someone think their salary was zero.
+   - I sorted documents with the newest first and used stacked cards on small screens. I also explained why preview buttons are disabled, since file viewing and downloads are not connected yet.
+
+4. **What are the four states every screen needs?**
+   I plan for four states: **normal**, when the data is ready; **loading**, while it is being fetched; **empty**, when there are no records to show; and **error**, when something goes wrong. I use skeletons while loading, helpful messages for empty results, and a clear error message with a way to try again. This helps users understand the difference between having no data and a request failing.
 
 ## Role-based workspace extension
 
