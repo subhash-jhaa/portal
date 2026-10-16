@@ -4,9 +4,13 @@ Implementation: Tasks 1–4, self-registration extension, My Documents exercise.
 
 ## Teammate demonstration
 
-With Node.js 22.12+ and Docker installed, open the project folder and run npm run docker:up. It generates the ignored mock environment when absent and builds/starts the separate growmer-assignment container. Visit http://localhost:3006/login and use the employee demo account documented in README.md. Search a colleague in Directory, open their read-only public profile, update your own contacts in My profile, and inspect My Documents. Sign out and verify that protected pages redirect. Repeat as the predefined admin to review workforce totals, department distribution, recent joiners and directory shortcuts. Personal profiles and payslips remain scoped to each signed-in employee; editing colleagues is outside scope.
+Follow the [Teammate quick start](../README.md#teammate-quick-start) in README.md. It covers prerequisites, the one-command Docker startup, employee credentials, finding Aditi Sharma, editing your own phone number, comparing both themes with the design guide, checking documents and signing out. Each step includes the expected result. The [Docker help](../README.md#help-with-the-docker-walkthrough) section covers startup errors and using a different host port.
 
-Use /documents?demoState=loading, empty or error in mock mode to demonstrate all states. Use /designs to compare both document options and all five screen states. DESIGN_GUIDE.md defines what should match on desktop/mobile and light/dark themes.
+Employee review passes when a teammate can complete that walkthrough and confirms the screens match [DESIGN_GUIDE.md](../DESIGN_GUIDE.md). Human teammate acceptance is still pending; the instructions and automated results do not claim that someone has completed it.
+
+Optional admin review: sign in with the admin account in README.md to inspect workforce totals, department distribution, recent joiners and directory shortcuts. Personal profiles and payslips remain scoped to the signed-in person; editing colleagues is outside scope.
+
+Use `/documents?demoState=loading`, `/documents?demoState=empty` and `/documents?demoState=error` in mock mode to demonstrate the other document states. Use `/designs` to compare both document options and all four states for each of the five screens.
 
 ## Implementation evidence
 

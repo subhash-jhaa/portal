@@ -2,6 +2,33 @@
 
 One Next.js employee portal: Task 1 architecture and typed API boundary, Task 2 reviewed v0 screens/theme, Task 3 server-managed authentication, Task 4 profile/directory, and the My Documents exercise. The public /designs gallery preserves all screen alternatives and states. Real login uses the selected design with React Hook Form + Zod.
 
+## Teammate quick start
+
+You need Node.js 22.12 or newer and Docker Desktop with Docker Compose v2. Start Docker Desktop and wait until its engine is running. Use Linux containers. Download or clone this project, then open a terminal in the folder containing `package.json` and `compose.yaml`.
+
+Run this one command:
+
+```bash
+npm run docker:up
+```
+
+You do not need to install the project's npm dependencies on your computer for this Docker walkthrough. The command creates a local `.env` with a random mock signing key, then Docker installs the dependencies, builds the app and waits for it to become healthy. The first run needs an internet connection to download images and packages and can take several minutes. Existing `.env` settings are preserved.
+
+When the command finishes successfully, open [Growmer sign-in](http://localhost:3006/login). No Python backend or real employee data is needed for this demo.
+
+| Step                 | What to do                                                                                                                                                | What you should see                                                                                                                                                                 |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Sign in           | Use `aarav.mehta@example.com` and `Employee123!`.                                                                                                         | Aarav's employee dashboard and personal information.                                                                                                                                |
+| 2. Find a colleague  | Open **Directory**, leave Department on **All departments**, and search for `Aditi Sharma`. Pause briefly for the search to finish, then select the name. | Aditi's public profile. Colleague profiles are read-only. Search and filters stay in the URL.                                                                                       |
+| 3. Edit your profile | Open **My profile**, choose **Edit contact details**, change Phone to `+91 98765 43210`, and choose **Save changes**.                                     | A success message and the updated phone number. Refresh the page to confirm it is still there.                                                                                      |
+| 4. Check the design  | Compare the screens with [DESIGN_GUIDE.md](DESIGN_GUIDE.md), then use the theme switch.                                                                   | Green brand accents in both themes, pale light surfaces, charcoal dark surfaces, and consistent fonts, spacing and controls. `/designs` shows the reviewed alternatives and states. |
+| 5. Check documents   | Open **My Documents**.                                                                                                                                    | Fictional file records. Preview buttons are disabled with an explanation because file viewing and downloads are not connected.                                                      |
+| 6. Sign out          | Choose **Sign out**, then open `/profile` again.                                                                                                          | The sign-in page; a signed-out user cannot open the protected profile.                                                                                                              |
+
+Use fictional values when trying the form. You can edit your own contact details; employment details are managed by HR. Changing the profile's contact email does not change the email used to sign in. Contact edits survive browser refreshes but reset when the mock server restarts. Self-registered accounts are stored separately and persist in the Docker volume.
+
+After completing the steps, tell the project owner whether anything failed and which step it happened on. A successful automated test run is recorded separately from a teammate completing this walkthrough.
+
 ## Run locally
 
 Requires Node.js 22.12+. Run npm ci, npm run setup:env, then npm run dev. Open http://localhost:3000/login. If occupied use npm run dev -- --port 3005. setup:env creates an ignored .env with a random mock signing key; preserve it and never commit it. Existing .env.local settings take precedence over .env.
@@ -9,6 +36,16 @@ Requires Node.js 22.12+. Run npm ci, npm run setup:env, then npm run dev. Open h
 ## Docker
 
 Run `npm run docker:up` from the project folder. This single command creates the ignored mock environment if absent and runs `docker compose up --build -d --wait`. Open http://localhost:3006/login. Compose project growmer-assignment and container growmer-assignment-portal-1 remain separate from ai-sales-workforce. The standalone image runs as UID 1001. Check docker compose ps, docker compose exec portal id, and docker compose logs -f. Stop with docker compose down.
+
+## Help with the Docker walkthrough
+
+- **Docker cannot connect:** Open Docker Desktop, wait for the engine to start, then run `npm run docker:up` again. `docker compose version` should show Compose v2.
+- **Port 3006 is already in use:** Choose another free port. In PowerShell, run `$env:PORT = '3007'`, then `npm run docker:up` and open `http://localhost:3007/login`. In Command Prompt, use `set PORT=3007` before the startup command. Use the chosen port for all links in this guide; the container still uses port 3000.
+- **The build fails while downloading:** Check your internet connection and Docker's registry access, then run the startup command again. Keep the error output if you need help.
+- **The page does not open after startup:** Run `docker compose ps` to check the container status and `docker compose logs --tail 100 portal` to see recent errors. When healthy, `/health` should return HTTP 200. Share the error message with the project owner, without sharing `.env` or signing keys.
+- **The demo account does not work:** Copy the employee credentials above exactly. If you reused an old project folder, check that its `.env` still enables mock mode. The setup command preserves existing settings rather than replacing them.
+
+To stop the app, run `docker compose down` from the same project folder. This preserves registered demo accounts in the named volume.
 
 ## Demo sign-in
 
